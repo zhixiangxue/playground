@@ -1,0 +1,1102 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>智能贷款信息收集 | 快速预审</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="chatkit.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+        }
+        
+        body {
+            background: #fff;
+            color: #000;
+            line-height: 1.6;
+            padding: 20px;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        
+        .logo {
+            font-size: 20px;
+            font-weight: 600;
+            color: #000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 8px;
+        }
+        
+        .logo i {
+            color: #000;
+        }
+        
+        .subtitle {
+            color: #666;
+            font-size: 13px;
+            font-weight: 400;
+        }
+        
+        .form-container {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        
+        .card {
+            background: #fff;
+            border-radius: 12px;
+            border: 1px solid #e0e0e0;
+            overflow: hidden;
+        }
+        
+        .card-header {
+            background: #f5f5f5;
+            color: #000;
+            padding: 20px 24px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        
+        .card-header h2 {
+            font-size: 18px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .card-header h2 i {
+            font-size: 20px;
+        }
+        
+        .card-body {
+            padding: 24px;
+        }
+        
+        .form-section {
+            margin-bottom: 24px;
+        }
+        
+        .section-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #000;
+            margin-bottom: 16px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid #f0f0f0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .form-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 16px;
+            margin-bottom: 16px;
+        }
+        
+        .form-group {
+            flex: 1 1 300px;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .form-group label {
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #000;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+        }
+        
+        .form-group label .info-tooltip {
+            color: #999;
+            cursor: help;
+        }
+
+        input, select, .radio-group, .checkbox-group {
+            width: 100%;
+            padding: 12px 14px;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: all 0.2s;
+            background-color: #fff;
+            box-sizing: border-box;
+            color: #000;
+        }
+        
+        input:focus, select:focus {
+            outline: none;
+            border-color: #000;
+            background-color: #fff;
+        }
+        
+        .radio-group, .checkbox-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            padding: 12px;
+            background: #f5f5f5;
+        }
+        
+        .radio-option, .checkbox-option {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            padding: 6px 10px;
+            border-radius: 6px;
+            transition: background-color 0.2s;
+        }
+        
+        .radio-option:hover, .checkbox-option:hover {
+            background-color: #e0e0e0;
+        }
+        
+        .radio-option input, .checkbox-option input {
+            margin: 0;
+            width: 16px;
+            height: 16px;
+            cursor: pointer;
+        }
+        
+        .progress-container {
+            margin-bottom: 24px;
+        }
+        
+        .progress-bar {
+            height: 6px;
+            background-color: #e0e0e0;
+            border-radius: 3px;
+            overflow: hidden;
+            margin-bottom: 8px;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: #000;
+            width: 25%;
+            transition: width 0.3s ease;
+        }
+        
+        .progress-text {
+            display: flex;
+            justify-content: space-between;
+            font-size: 12px;
+            color: #666;
+        }
+        
+        .buttons {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 24px;
+            gap: 12px;
+        }
+        
+        .btn {
+            padding: 14px 24px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            border: none;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        
+        .btn-primary {
+            background: #000;
+            color: #fff;
+            flex: 2;
+        }
+        
+        .btn-primary:hover {
+            background: #333;
+        }
+        
+        .btn-primary:disabled {
+            background: #999;
+            cursor: not-allowed;
+        }
+        
+        .btn-secondary {
+            background-color: #fff;
+            color: #000;
+            border: 1px solid #e0e0e0;
+            flex: 1;
+        }
+        
+        .btn-secondary:hover {
+            background-color: #f5f5f5;
+        }
+        
+        .info-box {
+            background-color: #f5f5f5;
+            border-left: 3px solid #000;
+            padding: 12px 16px;
+            border-radius: 0 6px 6px 0;
+            margin-top: 16px;
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            font-size: 13px;
+        }
+        
+        .info-box i {
+            color: #000;
+            font-size: 16px;
+            margin-top: 2px;
+        }
+        
+        .loan-type-indicator {
+            display: inline-block;
+            padding: 3px 10px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-left: 8px;
+        }
+        
+        .qm {
+            background-color: #e0e0e0;
+            color: #000;
+        }
+        
+        .non-qm {
+            background-color: #f5f5f5;
+            color: #666;
+        }
+        
+        .va {
+            background-color: #f0f0f0;
+            color: #000;
+        }
+        
+        .jumbo {
+            background-color: #e8e8e8;
+            color: #000;
+        }
+        
+        .hidden {
+            display: none;
+        }
+        
+        .summary-box {
+            background-color: #f5f5f5;
+            border-radius: 8px;
+            padding: 16px;
+            margin-top: 16px;
+            border: 1px solid #e0e0e0;
+            position: relative;
+        }
+
+        .summary-box::before {
+            content: '🔧 Debug Info';
+            position: absolute;
+            top: -10px;
+            left: 16px;
+            background-color: #666;
+            color: white;
+            padding: 2px 8px;
+            font-size: 10px;
+            font-weight: 600;
+            border-radius: 3px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .summary-box h4 {
+            margin-bottom: 12px;
+            color: #000;
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .summary-item {
+            padding: 10px;
+            background-color: #fff;
+            border-radius: 6px;
+            border: 1px solid #e0e0e0;
+        }
+
+        .summary-label {
+            font-size: 10px;
+            color: #666;
+            margin-bottom: 4px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .summary-value {
+            font-weight: 600;
+            color: #000;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+        }
+
+        .loan-result {
+            padding: 12px;
+            background-color: #fff;
+            border-radius: 6px;
+            border: 1px solid #e0e0e0;
+            margin-top: 8px;
+        }
+
+        .result-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .result-header h4 {
+            color: #000;
+            font-size: 12px;
+            font-weight: 600;
+            margin: 0;
+        }
+
+        .rate-estimate {
+            font-size: 14px;
+            font-weight: 700;
+            color: #000;
+            font-family: 'Courier New', monospace;
+        }
+
+        .result-details {
+            color: #666;
+            font-size: 11px;
+            font-family: 'Courier New', monospace;
+            line-height: 1.4;
+        }
+
+        /* 地点搜索样式 */
+        .location-search-container {
+            position: relative;
+        }
+
+        .location-dropdown {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: white;
+            border: 1px solid #e0e0e0;
+            border-top: none;
+            border-radius: 0 0 8px 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            max-height: 300px;
+            overflow-y: auto;
+            z-index: 1000;
+            display: none;
+        }
+
+        .location-dropdown.show {
+            display: block;
+        }
+
+        .location-category {
+            background-color: #f5f5f5;
+            padding: 8px 12px;
+            font-weight: 600;
+            color: #000;
+            font-size: 12px;
+            border-bottom: 1px solid #e0e0e0;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        .location-options {
+            max-height: 250px;
+            overflow-y: auto;
+        }
+
+        .location-option {
+            padding: 10px 12px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            border-bottom: 1px solid #f0f0f0;
+            font-size: 13px;
+        }
+
+        .location-option:hover {
+            background-color: #f5f5f5;
+        }
+
+        .location-option.selected {
+            background-color: #e0e0e0;
+            color: #000;
+        }
+
+        .location-option-name {
+            font-weight: 500;
+            color: #000;
+        }
+
+        .location-option-state {
+            font-size: 11px;
+            color: #666;
+            margin-left: 6px;
+        }
+
+        @media (max-width: 768px) {
+            .form-row {
+                flex-direction: column;
+                gap: 12px;
+            }
+            
+            .form-group {
+                flex: 1 1 100%;
+            }
+            
+            .buttons {
+                flex-direction: column;
+            }
+            
+            .btn {
+                width: 100%;
+            }
+            
+            .summary-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="form-container">
+            <div class="card">
+                <div class="card-header">
+                    <h2><i class="fas fa-bolt"></i> 想了解一下您的贷款需求</h2>
+                </div>
+                
+                <div class="card-body">
+                    <div class="progress-container">
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="progressFill"></div>
+                        </div>
+                        <div class="progress-text">
+                            <span>开始填写</span>
+                            <span id="progressPercent">25%</span>
+                            <span>完成</span>
+                        </div>
+                    </div>
+                    
+                    <form id="loanForm">
+                        <!-- 第一部分：房产基本信息 -->
+                        <div class="form-section" id="section-property">
+                            <h3 class="section-title"><i class="fas fa-home"></i> 房产基本信息</h3>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="propertyLocation">房产地点</label>
+                                    <div class="location-search-container" id="locationSearchContainer">
+                                        <input type="text" id="propertyLocation" placeholder="搜索城市，例如：Los Angeles" required autocomplete="off">
+                                        <div class="location-dropdown" id="locationDropdown">
+                                            <div class="location-options" id="locationOptions"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label for="loanPurpose">贷款目的</label>
+                                    <select id="loanPurpose" required>
+                                        <option value="">请选择贷款目的</option>
+                                        <option value="purchase">购买自住房</option>
+                                        <option value="refinance">再融资/转贷</option>
+                                        <option value="investment">投资房</option>
+                                        <option value="second_home">第二套房</option>
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="propertyType">房产类型</label>
+                                    <select id="propertyType" required>
+                                        <option value="">请选择房产类型</option>
+                                        <option value="single_family">独立屋</option>
+                                        <option value="condo">公寓</option>
+                                        <option value="townhouse">联排别墅</option>
+                                        <option value="multi_unit">多单元住宅</option>
+                                        <option value="commercial">商业地产</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label for="propertyStatus">房产现状</label>
+                                    <select id="propertyStatus" required>
+                                        <option value="">请选择房产现状</option>
+                                        <option value="pre_construction">在建/预售</option>
+                                        <option value="existing">现房</option>
+                                        <option value="foreclosure">法拍房</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- 第二部分：贷款详情 -->
+                        <div class="form-section" id="section-loan">
+                            <h3 class="section-title"><i class="fas fa-file-invoice-dollar"></i> 贷款详情</h3>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="loanAmount">贷款金额 (USD)</label>
+                                    <input type="number" id="loanAmount" placeholder="例如：500000" min="0" step="10000" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="downPayment">首付比例</label>
+                                    <select id="downPayment" required>
+                                        <option value="">请选择首付比例</option>
+                                        <option value="0-5">0-5%</option>
+                                        <option value="5-10">5-10%</option>
+                                        <option value="10-20">10-20%</option>
+                                        <option value="20+">20%+</option>
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="creditScore">信用分数范围</label>
+                                    <select id="creditScore" required>
+                                        <option value="">请选择信用分数</option>
+                                        <option value="300-579">300-579 (较差)</option>
+                                        <option value="580-669">580-669 (一般)</option>
+                                        <option value="670-739">670-739 (良好)</option>
+                                        <option value="740-799">740-799 (很好)</option>
+                                        <option value="800-850">800-850 (优秀)</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label for="incomeType">收入类型 <span class="info-tooltip" title="这是确定贷款类型的关键信息">ℹ️</span></label>
+                                    <select id="incomeType" name="incomeType" required>
+                                        <option value="">请选择收入类型</option>
+                                        <option value="w2">W-2工资收入</option>
+                                        <option value="self_employed">自雇收入</option>
+                                        <option value="investment">投资收入</option>
+                                        <option value="other">其他</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- 第三部分：特殊情况 (动态显示) -->
+                        <div class="form-section hidden" id="section-special">
+                            <h3 class="section-title"><i class="fas fa-star"></i> 特殊情况</h3>
+                            <div class="form-row">
+                                <div class="form-group hidden" id="militaryGroup">
+                                    <label>您或您的配偶是否是现役或退役军人？</label>
+                                    <div class="radio-group">
+                                        <div class="radio-option">
+                                            <input type="radio" id="military_yes" name="military" value="yes">
+                                            <label for="military_yes">是</label>
+                                        </div>
+                                        <div class="radio-option">
+                                            <input type="radio" id="military_no" name="military" value="no">
+                                            <label for="military_no">否</label>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="form-group hidden" id="selfEmployedGroup">
+                                    <label>您是否有自雇收入？</label>
+                                    <div class="radio-group">
+                                        <div class="radio-option">
+                                            <input type="radio" id="selfEmployed_yes" name="selfEmployed" value="yes">
+                                            <label for="selfEmployed_yes">是</label>
+                                        </div>
+                                        <div class="radio-option">
+                                            <input type="radio" id="selfEmployed_no" name="selfEmployed" value="no">
+                                            <label for="selfEmployed_no">否</label>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="form-group hidden" id="taxReturnsGroup">
+                                    <label>您是否有2年以上的税单记录？</label>
+                                    <div class="radio-group">
+                                        <div class="radio-option">
+                                            <input type="radio" id="taxReturns_yes" name="taxReturns" value="yes">
+                                            <label for="taxReturns_yes">是</label>
+                                        </div>
+                                        <div class="radio-option">
+                                            <input type="radio" id="taxReturns_no" name="taxReturns" value="no">
+                                            <label for="taxReturns_no">否</label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- 第四部分：信息汇总 (调试信息 - 动态显示) -->
+                        <div class="form-section hidden" id="section-summary">
+                            <h3 class="section-title" style="color: #6c757d; border-bottom-color: #adb5bd;"><i class="fas fa-bug" style="color: #6c757d;"></i> 调试信息汇总 <small style="font-size: 11px; font-weight: normal; color: #6c757d; margin-left: 10px;">(仅供开发调试使用)</small></h3>
+                            <div class="summary-box">
+                                <h4>已收集信息</h4>
+                                <div class="summary-grid" id="summaryGrid">
+                                    <!-- 动态生成汇总信息 -->
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="buttons">
+                            <button type="button" class="btn btn-secondary" id="resetBtn">
+                                <i class="fas fa-redo"></i> 重新填写
+                            </button>
+                            <button type="submit" class="btn btn-primary" id="submitBtn">
+                                <i class="fas fa-paper-plane"></i> 好的，就是这样
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 美国主要城市数据(简化版,实际项目可以使用外部库如us-cities)
+        const usCities = [
+            { city: "Los Angeles", county: "Los Angeles County", state: "California" },
+            { city: "San Francisco", county: "San Francisco County", state: "California" },
+            { city: "New York", county: "New York County", state: "New York" },
+            { city: "Chicago", county: "Cook County", state: "Illinois" },
+            { city: "Houston", county: "Harris County", state: "Texas" },
+            { city: "Phoenix", county: "Maricopa County", state: "Arizona" },
+            { city: "Philadelphia", county: "Philadelphia County", state: "Pennsylvania" },
+            { city: "San Antonio", county: "Bexar County", state: "Texas" },
+            { city: "San Diego", county: "San Diego County", state: "California" },
+            { city: "Dallas", county: "Dallas County", state: "Texas" },
+            { city: "San Jose", county: "Santa Clara County", state: "California" },
+            { city: "Austin", county: "Travis County", state: "Texas" },
+            { city: "Jacksonville", county: "Duval County", state: "Florida" },
+            { city: "Fort Worth", county: "Tarrant County", state: "Texas" },
+            { city: "Columbus", county: "Franklin County", state: "Ohio" },
+            { city: "Charlotte", county: "Mecklenburg County", state: "North Carolina" },
+            { city: "San Francisco", county: "San Francisco County", state: "California" },
+            { city: "Indianapolis", county: "Marion County", state: "Indiana" },
+            { city: "Seattle", county: "King County", state: "Washington" },
+            { city: "Denver", county: "Denver County", state: "Colorado" },
+            { city: "Washington", county: "District of Columbia", state: "Washington, D.C." },
+            { city: "Boston", county: "Suffolk County", state: "Massachusetts" },
+            { city: "El Paso", county: "El Paso County", state: "Texas" },
+            { city: "Nashville", county: "Davidson County", state: "Tennessee" },
+            { city: "Detroit", county: "Wayne County", state: "Michigan" },
+            { city: "Portland", county: "Multnomah County", state: "Oregon" },
+            { city: "Las Vegas", county: "Clark County", state: "Nevada" },
+            { city: "Memphis", county: "Shelby County", state: "Tennessee" },
+            { city: "Louisville", county: "Jefferson County", state: "Kentucky" },
+            { city: "Baltimore", county: "Baltimore City", state: "Maryland" }
+        ];
+
+        // Initialize ChatKit SDK
+        const kit = ChatKit.init({
+            pageId: 'loankit',
+            onReady: function() {
+                console.log('Connected to parent chat interface');
+                setTimeout(() => kit.autoResize(), 100);
+            }
+        });
+
+        // 监听内容变化，自动调整高度
+        function autoResizeOnChange() {
+            setTimeout(() => kit.autoResize(), 50);
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const form = document.getElementById('loanForm');
+            const loanPurpose = document.getElementById('loanPurpose');
+            const incomeType = document.getElementById('incomeType');
+            const militaryGroup = document.getElementById('militaryGroup');
+            const selfEmployedGroup = document.getElementById('selfEmployedGroup');
+            const taxReturnsGroup = document.getElementById('taxReturnsGroup');
+            const sectionSpecial = document.getElementById('section-special');
+            const sectionSummary = document.getElementById('section-summary');
+            const summaryGrid = document.getElementById('summaryGrid');
+            const progressFill = document.getElementById('progressFill');
+            const progressPercent = document.getElementById('progressPercent');
+            const resetBtn = document.getElementById('resetBtn');
+            const submitBtn = document.getElementById('submitBtn');
+
+            // 地点搜索相关元素
+            const propertyLocation = document.getElementById('propertyLocation');
+            const locationDropdown = document.getElementById('locationDropdown');
+            const locationOptions = document.getElementById('locationOptions');
+            const locationSearchContainer = document.getElementById('locationSearchContainer');
+
+            // 初始化地点搜索功能
+            initLocationSearch();
+            
+            // 字段显示名称映射
+            const fieldLabels = {
+                propertyLocation: '房产地点',
+                loanPurpose: '贷款目的',
+                propertyType: '房产类型',
+                propertyStatus: '房产现状',
+                loanAmount: '贷款金额',
+                downPayment: '首付比例',
+                creditScore: '信用分数',
+                incomeType: '收入类型',
+                military: '军人身份',
+                selfEmployed: '自雇收入',
+                taxReturns: '税单记录'
+            };
+            
+            // 字段值显示映射
+            const valueLabels = {
+                loanPurpose: {
+                    purchase: '购买自住房',
+                    refinance: '再融资/转贷',
+                    investment: '投资房',
+                    second_home: '第二套房'
+                },
+                propertyType: {
+                    single_family: '独立屋',
+                    condo: '公寓',
+                    townhouse: '联排别墅',
+                    multi_unit: '多单元住宅',
+                    commercial: '商业地产'
+                },
+                propertyStatus: {
+                    pre_construction: '在建/预售',
+                    existing: '现房',
+                    foreclosure: '法拍房'
+                },
+                downPayment: {
+                    '0-5': '0-5%',
+                    '5-10': '5-10%',
+                    '10-20': '10-20%',
+                    '20+': '20%+'
+                },
+                creditScore: {
+                    '300-579': '300-579 (较差)',
+                    '580-669': '580-669 (一般)',
+                    '670-739': '670-739 (良好)',
+                    '740-799': '740-799 (很好)',
+                    '800-850': '800-850 (优秀)'
+                },
+                incomeType: {
+                    w2: 'W-2工资收入',
+                    self_employed: '自雇收入',
+                    investment: '投资收入',
+                    other: '其他'
+                },
+                military: {
+                    yes: '是',
+                    no: '否'
+                },
+                selfEmployed: {
+                    yes: '是',
+                    no: '否'
+                },
+                taxReturns: {
+                    yes: '是',
+                    no: '否'
+                }
+            };
+
+            // 地点搜索功能
+            function initLocationSearch() {
+                propertyLocation.addEventListener('input', function() {
+                    const searchTerm = this.value.toLowerCase();
+                    if (searchTerm.length < 1) {
+                        locationDropdown.classList.remove('show');
+                        return;
+                    }
+
+                    // 搜索城市
+                    const matchedCities = usCities.filter(city =>
+                        city.city.toLowerCase().includes(searchTerm)
+                    );
+
+                    // 更新选项
+                    locationOptions.innerHTML = '';
+                    matchedCities.slice(0, 10).forEach(city => {
+                        const option = document.createElement('div');
+                        option.className = 'location-option';
+                        option.innerHTML = `
+                            <span class="location-option-name">${city.city}</span>
+                            <span class="location-option-state">${city.state}</span>
+                        `;
+                        option.addEventListener('click', function() {
+                            propertyLocation.value = `${city.city}, ${city.county}, ${city.state}`;
+                            locationDropdown.classList.remove('show');
+                            updateProgress();
+                            updateSummary();
+                        });
+                        locationOptions.appendChild(option);
+                    });
+
+                    // 显示/隐藏下拉框
+                    if (matchedCities.length > 0) {
+                        locationDropdown.classList.add('show');
+                    } else {
+                        locationOptions.innerHTML = '<div style="padding: 20px; text-align: center; color: #7f8c8d; font-size: 13px;">未找到匹配的城市</div>';
+                        locationDropdown.classList.add('show');
+                    }
+                });
+
+                // 点击外部关闭下拉框
+                document.addEventListener('click', function(e) {
+                    if (!locationSearchContainer.contains(e.target)) {
+                        locationDropdown.classList.remove('show');
+                    }
+                });
+
+                // 获得焦点时显示提示
+                propertyLocation.addEventListener('focus', function() {
+                    if (!this.value || this.value.length < 1) {
+                        locationOptions.innerHTML = '<div style="padding: 20px; text-align: center; color: #7f8c8d; font-size: 13px;">请输入城市名进行搜索，例如：Los Angeles</div>';
+                        locationDropdown.classList.add('show');
+                    }
+                });
+            }
+
+            // 更新进度条
+            function updateProgress() {
+                const requiredFields = form.querySelectorAll('[required]');
+                const filledFields = Array.from(requiredFields).filter(field => {
+                    if (field.type === 'radio') {
+                        const name = field.name;
+                        return form.querySelector(`input[name="${name}"]:checked`);
+                    }
+                    return field.value.trim() !== '';
+                });
+                
+                const progress = Math.min(25 + (filledFields.length / requiredFields.length) * 75, 100);
+                progressFill.style.width = `${progress}%`;
+                progressPercent.textContent = `${Math.round(progress)}%`;
+            }
+            
+            // 动态显示/隐藏特殊问题
+            function toggleSpecialQuestions() {
+                const purpose = loanPurpose.value;
+                const incomeTypeValue = incomeType.value;
+
+                // 重置特殊问题
+                militaryGroup.classList.add('hidden');
+                selfEmployedGroup.classList.add('hidden');
+                taxReturnsGroup.classList.add('hidden');
+                sectionSpecial.classList.add('hidden');
+
+                // 显示军人问题（如果是自住或再融资）
+                if (purpose === 'purchase' || purpose === 'refinance') {
+                    militaryGroup.classList.remove('hidden');
+                }
+
+                // 显示自雇收入问题（如果是W-2收入）
+                if (incomeTypeValue === 'w2') {
+                    selfEmployedGroup.classList.remove('hidden');
+                }
+
+                // 显示税单问题（如果是自雇或投资收入）
+                if (incomeTypeValue === 'self_employed' || incomeTypeValue === 'investment') {
+                    taxReturnsGroup.classList.remove('hidden');
+                }
+
+                // 如果有任何特殊问题显示，就显示整个特殊部分
+                if (!militaryGroup.classList.contains('hidden') ||
+                    !selfEmployedGroup.classList.contains('hidden') ||
+                    !taxReturnsGroup.classList.contains('hidden')) {
+                    sectionSpecial.classList.remove('hidden');
+                }
+
+                // 更新信息汇总
+                updateSummary();
+                
+                // 自动调整高度
+                autoResizeOnChange();
+            }
+            
+            // 更新信息汇总
+            function updateSummary() {
+                const location = document.getElementById('propertyLocation').value;
+                const purpose = loanPurpose.value;
+                const propertyType = document.getElementById('propertyType').value;
+                const propertyStatus = document.getElementById('propertyStatus').value;
+                const loanAmount = document.getElementById('loanAmount').value;
+                const downPayment = document.getElementById('downPayment').value;
+                const creditScore = document.getElementById('creditScore').value;
+                const incomeType = form.querySelector('input[name="incomeType"]:checked');
+                const military = form.querySelector('input[name="military"]:checked');
+                const selfEmployed = form.querySelector('input[name="selfEmployed"]:checked');
+                const taxReturns = form.querySelector('input[name="taxReturns"]:checked');
+                
+                // 收集所有数据
+                const formData = {
+                    propertyLocation: location,
+                    loanPurpose: purpose,
+                    propertyType: propertyType,
+                    propertyStatus: propertyStatus,
+                    loanAmount: loanAmount,
+                    downPayment: downPayment,
+                    creditScore: creditScore,
+                    incomeType: incomeType ? incomeType.value : '',
+                    military: military ? military.value : '',
+                    selfEmployed: selfEmployed ? selfEmployed.value : '',
+                    taxReturns: taxReturns ? taxReturns.value : ''
+                };
+                
+                // 清空汇总网格
+                summaryGrid.innerHTML = '';
+                
+                // 添加非空字段到汇总
+                Object.keys(formData).forEach(key => {
+                    if (formData[key]) {
+                        const summaryItem = document.createElement('div');
+                        summaryItem.className = 'summary-item';
+                        
+                        const label = document.createElement('div');
+                        label.className = 'summary-label';
+                        label.textContent = fieldLabels[key] || key;
+                        
+                        const value = document.createElement('div');
+                        value.className = 'summary-value';
+                        
+                        // 获取显示的文本值
+                        let displayValue = formData[key];
+                        if (valueLabels[key] && valueLabels[key][formData[key]]) {
+                            displayValue = valueLabels[key][formData[key]];
+                        }
+                        
+                        // 特殊处理贷款金额
+                        if (key === 'loanAmount') {
+                            displayValue = '$' + parseInt(displayValue).toLocaleString();
+                        }
+                        
+                        value.textContent = displayValue;
+                        
+                        summaryItem.appendChild(label);
+                        summaryItem.appendChild(value);
+                        summaryGrid.appendChild(summaryItem);
+                    }
+                });
+
+                // 如果至少有一个字段有值，显示汇总部分
+                if (Object.values(formData).some(value => value)) {
+                    sectionSummary.classList.remove('hidden');
+                } else {
+                    sectionSummary.classList.add('hidden');
+                }
+
+                // 更新进度
+                updateProgress();
+                
+                // 自动调整高度
+                autoResizeOnChange();
+            }
+
+            
+            // 事件监听
+            loanPurpose.addEventListener('change', toggleSpecialQuestions);
+            incomeType.addEventListener('change', toggleSpecialQuestions);
+
+            // 监听所有输入变化
+            form.addEventListener('input', function() {
+                updateProgress();
+                updateSummary();
+            });
+
+            form.addEventListener('change', function() {
+                updateProgress();
+                updateSummary();
+            });
+            
+            // 表单提交
+            form.addEventListener('submit', function(e) {
+                e.preventDefault();
+
+                // 收集所有表单数据（包括select和radio）
+                const formValues = {
+                    propertyLocation: document.getElementById('propertyLocation').value,
+                    loanPurpose: document.getElementById('loanPurpose').value,
+                    propertyType: document.getElementById('propertyType').value,
+                    propertyStatus: document.getElementById('propertyStatus').value,
+                    loanAmount: document.getElementById('loanAmount').value,
+                    downPayment: document.getElementById('downPayment').value,
+                    creditScore: document.getElementById('creditScore').value,
+                    incomeType: document.getElementById('incomeType').value
+                };
+
+                // 收集radio选项（如果存在）
+                const militaryRadio = form.querySelector('input[name="military"]:checked');
+                if (militaryRadio) formValues.military = militaryRadio.value;
+
+                const selfEmployedRadio = form.querySelector('input[name="selfEmployed"]:checked');
+                if (selfEmployedRadio) formValues.selfEmployed = selfEmployedRadio.value;
+
+                const taxReturnsRadio = form.querySelector('input[name="taxReturns"]:checked');
+                if (taxReturnsRadio) formValues.taxReturns = taxReturnsRadio.value;
+
+                // 添加时间戳
+                formValues.timestamp = new Date().toISOString();
+
+                // 发送数据到父页面聊天界面
+                kit.sendData({
+                    type: 'form_submit',
+                    data: formValues
+                });
+
+                // 锁定表单：禁用所有输入
+                form.querySelectorAll('input, select, textarea').forEach(el => {
+                    el.disabled = true;
+                });
+
+                // 隐藏所有按钮
+                document.querySelector('.buttons').style.display = 'none';
+                
+                // 在实际应用中，这里会调用API
+                console.log('提交的表单数据:', formValues);
+                console.log('JSON格式:', JSON.stringify(formValues, null, 2));
+            });
+            
+            // 重置表单
+            resetBtn.addEventListener('click', function() {
+                if (confirm('确定要重置所有信息吗？')) {
+                    form.reset();
+                    sectionSpecial.classList.add('hidden');
+                    sectionSummary.classList.add('hidden');
+                    progressFill.style.width = '25%';
+                    progressPercent.textContent = '25%';
+                    submitBtn.innerHTML = '<i class="fas fa-paper-plane"></i> 好的，就是这样';
+                    submitBtn.disabled = false;
+                    submitBtn.style.background = '';
+                }
+            });
+            
+            // 初始更新进度
+            updateProgress();
+        });
+    </script>
+</body>
+</html>

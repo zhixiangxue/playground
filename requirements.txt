@@ -1,0 +1,11 @@
+# FastAPI dependencies
+fastapi==0.115.0
+uvicorn==0.32.0
+websockets==13.1
+python-dotenv==1.0.0
+
+# chak
+chakpy @ git+https://github.com/zhixiangxue/chak-ai.git@main
+
+# Utilities
+pydantic==2.10.3

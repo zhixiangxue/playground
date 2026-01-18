@@ -1,0 +1,1180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mortgage Chat</title>
+    <!-- Marked.js for Markdown rendering -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            background: #fff;
+            color: #000;
+        }
+        .header {
+            background: #f5f5f5;
+            border-bottom: 1px solid #e0e0e0;
+            padding: 20px 24px;
+        }
+        .header h1 {
+            font-size: 20px;
+            font-weight: 600;
+            color: #000;
+            margin-bottom: 4px;
+        }
+        .header .hint {
+            font-size: 13px;
+            color: #666;
+        }
+        .chat-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            max-width: 1000px;
+            width: 100%;
+            margin: 0 auto;
+            padding: 20px;
+            min-height: 0;
+        }
+        .messages {
+            flex: 1;
+            overflow-y: auto;
+            margin-bottom: 20px;
+            padding-right: 8px;
+            min-height: 0;
+        }
+        .messages::-webkit-scrollbar {
+            width: 4px;
+        }
+        .messages::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .messages::-webkit-scrollbar-thumb {
+            background: #000;
+            border-radius: 2px;
+        }
+        .message {
+            margin-bottom: 16px;
+            display: flex;
+            flex-direction: column;
+        }
+        .message.user {
+            align-items: flex-end;
+        }
+        .message.assistant {
+            align-items: flex-start;
+        }
+        .message-role {
+            font-size: 11px;
+            font-weight: 600;
+            margin-bottom: 6px;
+            color: #999;
+        }
+        .message-content {
+            max-width: 70%;
+            padding: 12px 16px;
+            border-radius: 16px;
+            font-size: 14px;
+            line-height: 1.6;
+            /* Removed white-space: pre-wrap to prevent extra spacing */
+        }
+        .message.user .message-content {
+            background: #000;
+            color: #fff;
+            border-radius: 16px 16px 4px 16px;
+        }
+        .message.assistant .message-content {
+            background: #f5f5f5;
+            color: #000;
+            border-radius: 16px 16px 16px 4px;
+        }
+        /* Embed message - full width, no scroll */
+        .message.embed {
+            align-items: stretch;
+        }
+        .message.embed .message-content {
+            max-width: 100%;
+            padding: 0;
+            background: transparent;
+            border-radius: 0;
+        }
+        .embed-frame {
+            width: 100%;
+            border: none;
+            border-radius: 0;
+            background: white;
+        }
+        /* Data message - structured data display */
+        .message.data .message-content {
+            background: #f8f9fa;
+            border: 1px solid #e0e0e0;
+            border-radius: 12px;
+            max-width: 80%;
+        }
+        .data-header {
+            padding: 12px 16px;
+            border-bottom: 1px solid #e0e0e0;
+            font-weight: 600;
+            color: #000;
+        }
+        .data-body {
+            padding: 16px;
+        }
+        .data-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        .data-item:last-child {
+            border-bottom: none;
+        }
+        .data-label {
+            font-weight: 500;
+            color: #666;
+            font-size: 13px;
+        }
+        .data-value {
+            font-weight: 600;
+            color: #000;
+            font-size: 13px;
+            font-family: 'Courier New', monospace;
+        }
+        .input-container {
+            background: #fff;
+            border-radius: 12px;
+            border: 1px solid #e0e0e0;
+            padding: 12px;
+        }
+        .input-wrapper {
+            display: flex;
+            gap: 8px;
+        }
+        textarea {
+            flex: 1;
+            border: none;
+            outline: none;
+            resize: none;
+            font-size: 14px;
+            font-family: inherit;
+            min-height: 80px;
+            max-height: 200px;
+            background: transparent;
+            color: #000;
+        }
+        button {
+            background: #000;
+            color: #fff;
+            border: none;
+            border-radius: 6px;
+            padding: 8px 12px;
+            cursor: pointer;
+            transition: background 0.2s;
+            align-self: flex-end;
+            min-width: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        button:hover {
+            background: #333;
+        }
+        button svg {
+            width: 18px;
+            height: 18px;
+            fill: currentColor;
+        }
+        .test-buttons {
+            margin-bottom: 12px;
+            display: none;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        .test-btn {
+            padding: 6px 12px;
+            font-size: 12px;
+            background: #f5f5f5;
+            color: #000;
+            border: 1px solid #e0e0e0;
+        }
+        .test-btn:hover {
+            background: #e8e8e8;
+        }
+        .loading-indicator {
+            display: none;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 16px;
+            margin-bottom: 16px;
+            font-size: 13px;
+            color: #666;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+        .loading-indicator.active {
+            display: flex;
+        }
+        .loading-indicator.success {
+            color: #2e7d32;
+        }
+        .loading-indicator.error {
+            color: #c62828;
+        }
+        .loading-dots {
+            display: flex;
+            gap: 4px;
+        }
+        .loading-dots span {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: #999;
+            animation: bounce 1.4s infinite ease-in-out both;
+        }
+        .loading-dots span:nth-child(1) {
+            animation-delay: -0.32s;
+        }
+        .loading-dots span:nth-child(2) {
+            animation-delay: -0.16s;
+        }
+        @keyframes bounce {
+            0%, 80%, 100% {
+                transform: scale(0.8);
+                opacity: 0.5;
+            }
+            40% {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+        /* Thinking dots animation */
+        .thinking-dots {
+            display: inline-block;
+            margin-left: 2px;
+        }
+        .thinking-dots span {
+            animation: thinking 1.4s infinite ease-in-out both;
+            display: inline-block;
+        }
+        .thinking-dots span:nth-child(1) {
+            animation-delay: 0s;
+        }
+        .thinking-dots span:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+        .thinking-dots span:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+        @keyframes thinking {
+            0%, 60%, 100% {
+                opacity: 0.3;
+            }
+            30% {
+                opacity: 1;
+            }
+        }
+        /* Markdown styling */
+        .message-content h1,
+        .message-content h2,
+        .message-content h3,
+        .message-content h4 {
+            margin: 8px 0 4px 0;
+            font-weight: 600;
+            line-height: 1.3;
+        }
+        .message-content h1:first-child,
+        .message-content h2:first-child,
+        .message-content h3:first-child,
+        .message-content h4:first-child {
+            margin-top: 0;
+        }
+        .message-content h1 { font-size: 18px; }
+        .message-content h2 { font-size: 16px; }
+        .message-content h3 { font-size: 15px; }
+        .message-content h4 { font-size: 14px; }
+        .message-content p {
+            margin: 4px 0;
+            line-height: 1.5;
+        }
+        .message-content p:first-child {
+            margin-top: 0;
+        }
+        .message-content p:last-child {
+            margin-bottom: 0;
+        }
+        .message-content ul,
+        .message-content ol {
+            margin: 4px 0;
+            padding-left: 20px;
+        }
+        .message-content ul:first-child,
+        .message-content ol:first-child {
+            margin-top: 0;
+        }
+        .message-content ul:last-child,
+        .message-content ol:last-child {
+            margin-bottom: 0;
+        }
+        .message-content li {
+            margin: 1px 0;
+            line-height: 1.5;
+        }
+        .message-content code {
+            background: rgba(0, 0, 0, 0.08);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+        }
+        .message.assistant .message-content code {
+            background: rgba(0, 0, 0, 0.08);
+        }
+        .message.user .message-content code {
+            background: rgba(255, 255, 255, 0.2);
+        }
+        .message-content pre {
+            background: rgba(0, 0, 0, 0.05);
+            padding: 12px;
+            border-radius: 8px;
+            overflow-x: auto;
+            margin: 8px 0;
+        }
+        .message.assistant .message-content pre {
+            background: rgba(0, 0, 0, 0.05);
+        }
+        .message.user .message-content pre {
+            background: rgba(255, 255, 255, 0.15);
+        }
+        .message-content pre code {
+            background: transparent;
+            padding: 0;
+        }
+        .message-content strong {
+            font-weight: 600;
+        }
+        .message-content em {
+            font-style: italic;
+        }
+        .message-content blockquote {
+            border-left: 3px solid #000;
+            padding-left: 12px;
+            margin: 8px 0;
+            opacity: 0.8;
+        }
+        .message.assistant .message-content blockquote {
+            border-left-color: #666;
+        }
+        .message.user .message-content blockquote {
+            border-left-color: rgba(255, 255, 255, 0.6);
+        }
+        .message-content a {
+            color: inherit;
+            text-decoration: underline;
+        }
+        .message-content hr {
+            border: none;
+            border-top: 1px solid rgba(0, 0, 0, 0.1);
+            margin: 12px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>💰 Mortgage Chat</h1>
+        <div class="hint">AI-powered mortgage advisory service</div>
+    </div>
+    
+    <div class="chat-container">
+        <div class="messages" id="messages"></div>
+        
+        <div class="input-container">
+            <div class="input-wrapper">
+                <textarea id="input" placeholder="Type your message..."></textarea>
+                <button onclick="sendMessage()">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="22" y1="2" x2="11" y2="13"/>
+                        <polygon points="22 2 15 22 11 13 2 9 22 2"/>
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let embedFrames = {};
+        let ws = null;
+        let currentMessage = '';
+        let isProcessing = false;
+        let inlineContentRendered = false;  // Flag to prevent overwriting inline content
+
+        // Show/hide loading indicator
+        function showLoading() {
+            isProcessing = true;
+            
+            // Create loading indicator if not exists
+            let loadingDiv = document.getElementById('loadingIndicator');
+            if (!loadingDiv) {
+                loadingDiv = document.createElement('div');
+                loadingDiv.id = 'loadingIndicator';
+                loadingDiv.className = 'loading-indicator';
+                loadingDiv.innerHTML = `
+                    <div class="loading-dots">
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                    </div>
+                    <span>Thinking...</span>
+                `;
+                document.getElementById('messages').appendChild(loadingDiv);
+            }
+            
+            loadingDiv.classList.add('active');
+            scrollToBottom();
+        }
+
+        function hideLoading() {
+            isProcessing = false;
+            const loadingDiv = document.getElementById('loadingIndicator');
+            if (loadingDiv) {
+                loadingDiv.remove();
+            }
+        }
+
+        // Show/hide tool call indicator
+        function showToolCallIndicator(toolName) {
+            // Hide thinking indicator if present
+            hideLoading();
+            
+            // Format tool name for display
+            const displayName = toolName.replace(/_/g, ' ').replace(/^update /, '');
+            
+            // Create tool indicator if not exists
+            let toolDiv = document.getElementById('toolIndicator');
+            if (!toolDiv) {
+                toolDiv = document.createElement('div');
+                toolDiv.id = 'toolIndicator';
+                toolDiv.className = 'loading-indicator';
+                document.getElementById('messages').appendChild(toolDiv);
+            }
+            
+            toolDiv.innerHTML = `
+                <div class="loading-dots">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </div>
+                <span>🔧 Calling: ${displayName}...</span>
+            `;
+            toolDiv.classList.add('active');
+            toolDiv.classList.remove('success', 'error');
+            scrollToBottom();
+        }
+
+        function updateToolCallIndicator(toolName, status) {
+            const toolDiv = document.getElementById('toolIndicator');
+            if (!toolDiv) return;
+            
+            const displayName = toolName.replace(/_/g, ' ').replace(/^update /, '');
+            
+            if (status === 'success') {
+                // Convert to permanent message instead of hiding later
+                toolDiv.innerHTML = `
+                    <span style="font-size: 16px;">✅</span>
+                    <span>Called: ${displayName}</span>
+                `;
+                toolDiv.classList.add('success');
+                toolDiv.classList.remove('error');
+                
+                // Make it permanent by removing the ID (so it won't be hidden)
+                toolDiv.removeAttribute('id');
+            } else if (status === 'error') {
+                toolDiv.innerHTML = `
+                    <span style="font-size: 16px;">❌</span>
+                    <span>Failed: ${displayName}</span>
+                `;
+                toolDiv.classList.add('error');
+                toolDiv.classList.remove('success');
+                
+                // Make it permanent
+                toolDiv.removeAttribute('id');
+            }
+            
+            scrollToBottom();
+        }
+
+        function hideToolCallIndicator() {
+            const toolDiv = document.getElementById('toolIndicator');
+            if (toolDiv) {
+                toolDiv.remove();
+            }
+        }
+
+        // Add thinking dots to last message (障眼法)
+        function addThinkingDots() {
+            const messages = document.getElementById('messages');
+            const lastMsg = messages.lastElementChild;
+            
+            console.log('[Dots] Trying to add thinking dots, lastMsg:', lastMsg);
+            
+            // Check if last element is loading indicator
+            if (lastMsg && lastMsg.id === 'loadingIndicator') {
+                console.log('[Dots] Last element is loading indicator, skipping');
+                return;
+            }
+            
+            if (lastMsg && lastMsg.classList.contains('assistant')) {
+                const contentDiv = lastMsg.querySelector('.message-content');
+                if (contentDiv && !contentDiv.querySelector('.thinking-dots')) {
+                    const dots = document.createElement('span');
+                    dots.className = 'thinking-dots';
+                    dots.innerHTML = '<span>.</span><span>.</span><span>.</span>';
+                    contentDiv.appendChild(dots);
+                    console.log('[Dots] ✓ Added thinking dots');
+                } else {
+                    console.log('[Dots] ✗ Already has dots or no contentDiv');
+                }
+            } else {
+                console.log('[Dots] ✗ No assistant message found, lastMsg:', lastMsg?.className);
+            }
+        }
+
+        function removeThinkingDots() {
+            const messages = document.getElementById('messages');
+            const lastMsg = messages.lastElementChild;
+            
+            if (lastMsg && lastMsg.classList.contains('assistant')) {
+                const contentDiv = lastMsg.querySelector('.message-content');
+                if (contentDiv) {
+                    const dots = contentDiv.querySelector('.thinking-dots');
+                    if (dots) {
+                        dots.remove();
+                    }
+                }
+            }
+        }
+
+        // Initialize WebSocket connection
+        function initWebSocket() {
+            const wsUrl = 'ws://localhost:8001/ws/chat';
+            ws = new WebSocket(wsUrl);
+
+            ws.onopen = function() {
+                console.log('[WebSocket] Connected');
+            };
+
+            ws.onmessage = function(event) {
+                const data = JSON.parse(event.data);
+                console.log('[WebSocket] Received:', data);
+
+                if (data.type === 'tool_start') {
+                    // Tool call started - add thinking dots to last message
+                    addThinkingDots();
+                    showToolCallIndicator(data.tool_name);
+                } else if (data.type === 'tool_success') {
+                    // Tool completed - keep dots until next chunk arrives
+                    console.log('[Tool] ========================================');
+                    console.log('[Tool] Completed:', data.tool_name);
+                    console.log('[Tool] Result type:', typeof data.result);
+                    console.log('[Tool] Result length:', data.result?.length);
+                    console.log('[Tool] Result preview:', data.result?.substring(0, 300));
+                    console.log('[Tool] ========================================');
+                    updateToolCallIndicator(data.tool_name, 'success');
+                    
+                    // Check if tool returned chatkit action (for any tool that returns embedded pages)
+                    if (data.result) {
+                        console.log('[ChatKit] ✓ Tool has result, attempting to parse...');
+                        console.log('[ChatKit] Raw result:', data.result);
+                        try {
+                            const parsed = JSON.parse(data.result);
+                            console.log('[ChatKit] ✓ Successfully parsed JSON:', parsed);
+                            console.log('[ChatKit] Checking action field:', parsed.action);
+                            
+                            if (parsed.action === 'chatkit') {
+                                console.log('[ChatKit] ========================================');
+                                console.log('[ChatKit] ✓✓✓ CHATKIT ACTION DETECTED ✓✓✓');
+                                console.log('[ChatKit] Type:', parsed.type);
+                                console.log('[ChatKit] Render:', parsed.render);
+                                console.log('[ChatKit] ========================================');
+                                
+                                // Handle different render modes
+                                if (parsed.render === 'iframe' && parsed.url) {
+                                    // iframe rendering - load external page
+                                    console.log('[ChatKit] iframe rendering, URL:', parsed.url);
+                                    const pageId = parsed.url.split('?')[0].replace('.html', '');
+                                    inlineContentRendered = true;  // Set flag to prevent text overwrite
+                                    setTimeout(() => {
+                                        addEmbedMessage(parsed.url, pageId);
+                                    }, 300);
+                                } else if (parsed.render === 'inline') {
+                                    // Inline rendering - render in chat directly
+                                    console.log('[ChatKit] Inline rendering, type:', parsed.type);
+                                    inlineContentRendered = true;  // Set flag to prevent text overwrite
+                                    setTimeout(() => {
+                                        renderInlineContent(parsed.type, parsed.payload, parsed.message);
+                                    }, 300);
+                                } else {
+                                    console.warn('[ChatKit] ❌ Unknown render mode or missing url');
+                                }
+                            } else {
+                                console.warn('[ChatKit] ❌ Not a chatkit action');
+                                console.warn('[ChatKit] action:', parsed.action, '(expected: "chatkit")');
+                            }
+                        } catch (e) {
+                            console.error('[ChatKit] ❌ Failed to parse tool result as JSON:', e);
+                            console.error('[ChatKit] Error message:', e.message);
+                            console.error('[ChatKit] Error stack:', e.stack);
+                        }
+                    } else {
+                        console.warn('[ChatKit] ⚠️ Tool result is empty/null');
+                    }
+                } else if (data.type === 'tool_error') {
+                    // Tool call failed - remove thinking dots immediately
+                    removeThinkingDots();
+                    console.log('[Tool] Failed:', data.tool_name, data.error);
+                    updateToolCallIndicator(data.tool_name, 'error');
+                } else if (data.type === 'chunk') {
+                    // First chunk - hide loading only (keep tool indicator)
+                    if (currentMessage === '') {
+                        hideLoading();
+                        // Don't hide tool indicator - it's now permanent
+                    }
+                    
+                    // Remove thinking dots when new chunk arrives
+                    removeThinkingDots();
+                    
+                    // Check if inline content was rendered - if yes, skip text updates
+                    if (inlineContentRendered) {
+                        console.log('[ChatKit] ⚠️ Inline content rendered, ignoring text chunk to prevent overwrite');
+                        // Still track if it's final to reset flag
+                        if (data.is_final) {
+                            currentMessage = '';
+                            inlineContentRendered = false;  // Reset flag for next interaction
+                        }
+                        return;  // Skip text update
+                    }
+                    
+                    // Stream chunk
+                    currentMessage += data.content;
+                    updateLastMessage(currentMessage);
+
+                    if (data.is_final) {
+                        // Finalize message - check the accumulated content
+                        const finalContent = currentMessage;
+                        currentMessage = '';
+                        
+                        // Check if message contains chatkit action
+                        console.log('[ChatKit] Checking final content:', finalContent);
+                        detectChatkitAction(finalContent);
+                    }
+                } else if (data.type === 'message') {
+                    // Non-streaming message
+                    hideLoading();
+                    addMessage('assistant', data.content);
+                    detectChatkitAction(data.content);
+                } else if (data.type === 'error') {
+                    hideLoading();
+                    addMessage('assistant', '❌ Error: ' + data.error);
+                }
+            };
+
+            ws.onerror = function(error) {
+                console.error('[WebSocket] Error:', error);
+                addMessage('assistant', '❌ Connection error. Please refresh.');
+            };
+
+            ws.onclose = function() {
+                console.log('[WebSocket] Disconnected');
+                addMessage('assistant', '⚠️ Disconnected. Please refresh.');
+            };
+        }
+
+        // Update last assistant message (for streaming)
+        function updateLastMessage(content) {
+            console.log('[Update] Updating message, content length:', content.length, 'content:', content.substring(0, 20));
+            
+            const messages = document.getElementById('messages');
+            const lastMsg = messages.lastElementChild;
+            
+            if (lastMsg && lastMsg.classList.contains('assistant')) {
+                const contentDiv = lastMsg.querySelector('.message-content');
+                
+                // Check if there are thinking dots
+                const existingDots = contentDiv.querySelector('.thinking-dots');
+                
+                if (existingDots) {
+                    // Preserve the dots, only update text before them
+                    const textNode = Array.from(contentDiv.childNodes).find(node => node.nodeType === Node.TEXT_NODE);
+                    if (textNode) {
+                        textNode.textContent = content;
+                    } else {
+                        // Create text node before dots
+                        contentDiv.insertBefore(document.createTextNode(content), existingDots);
+                    }
+                } else {
+                    // No dots, just update with markdown
+                    contentDiv.innerHTML = marked.parse(content);
+                }
+                console.log('[Update] ✓ Updated existing message');
+            } else {
+                addMessage('assistant', content);
+                console.log('[Update] ✓ Created new message');
+            }
+            scrollToBottom();
+        }
+
+        // Detect chatkit action format in message
+        function detectChatkitAction(content) {
+            console.log('[ChatKit] Trying to detect action in:', content.substring(0, 200));
+            try {
+                // Try to parse as JSON
+                const parsed = JSON.parse(content);
+                console.log('[ChatKit] Parsed JSON:', parsed);
+                if (parsed.action === 'chatkit' && parsed.url) {
+                    console.log('[ChatKit] ✓ Detected chatkit action:', parsed);
+                    const pageId = parsed.url.split('?')[0].replace('.html', '');
+                    console.log('[ChatKit] PageID:', pageId, 'URL:', parsed.url);
+                    
+                    // Remove the last assistant message (which contains the JSON)
+                    const messages = document.getElementById('messages');
+                    const lastMsg = messages.lastElementChild;
+                    if (lastMsg && lastMsg.classList.contains('assistant')) {
+                        lastMsg.remove();
+                    }
+                    
+                    setTimeout(() => {
+                        addEmbedMessage(parsed.url, pageId);
+                    }, 300);
+                    return true;
+                }
+            } catch (e) {
+                console.log('[ChatKit] Not JSON, no action to take');
+            }
+            return false;
+        }
+
+        // Render inline content based on type
+        function renderInlineContent(type, payload, message) {
+            console.log('[Render] Rendering inline content, type:', type);
+            console.log('[Render] Payload:', payload);
+            
+            if (type === 'officers_list') {
+                renderOfficersList(payload);
+            } else {
+                console.error('[Render] Unknown content type:', type);
+                addMessage('assistant', '❌ Unknown content type: ' + type);
+            }
+        }
+        
+        // Render officers list
+        function renderOfficersList(payload) {
+            console.log('[Officers] Rendering officers list');
+            const officers = payload.officers || [];
+            const totalCount = payload.total_count || 0;
+            
+            if (officers.length === 0) {
+                addMessage('assistant', '⚠️ No loan officers found matching your requirements.');
+                return;
+            }
+            
+            const messagesDiv = document.getElementById('messages');
+            const containerDiv = document.createElement('div');
+            containerDiv.className = 'message assistant';
+            
+            // Build HTML with horizontal scroll
+            let html = `
+                <div class="message-role">Recommended Loan Officers</div>
+                <div class="message-content" style="max-width: 100%; padding: 16px; background: #fff; border: 1px solid #e0e0e0; border-radius: 12px;">
+                    <div style="margin-bottom: 12px;">
+                        <div style="font-size: 15px; font-weight: 600; color: #000; margin-bottom: 4px;">Found ${totalCount} Matching Officers</div>
+                        <div style="font-size: 12px; color: #666;">Scroll horizontally to view all →</div>
+                    </div>
+                    <div style="display: flex; gap: 12px; overflow-x: auto; padding-bottom: 12px; scrollbar-width: thin;">
+            `;
+            
+            officers.forEach(officer => {
+                const matchBadge = officer.match_score >= 0.85 ? 
+                    '<span style="display: inline-block; padding: 3px 8px; background: #000; color: #fff; border-radius: 10px; font-size: 10px; font-weight: 600; margin-left: 6px;">BEST MATCH</span>' : '';
+                
+                const specialties = officer.specialties.map(s => {
+                    const label = formatSpecialty(s);
+                    return `<span style="padding: 3px 8px; background: #f5f5f5; border-radius: 10px; font-size: 10px; color: #000; font-weight: 500;">${label}</span>`;
+                }).join(' ');
+                
+                html += `
+                    <div style="min-width: 280px; max-width: 280px; background: #fff; border: 1px solid #e0e0e0; border-radius: 10px; padding: 16px; flex-shrink: 0;" 
+                         onmouseover="this.style.borderColor='#000'; this.style.boxShadow='0 2px 8px rgba(0,0,0,0.08)';" 
+                         onmouseout="this.style.borderColor='#e0e0e0'; this.style.boxShadow='none';">
+                        <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 10px;">
+                            <div style="flex: 1; min-width: 0;">
+                                <div style="font-size: 15px; font-weight: 600; color: #000; margin-bottom: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                                    ${officer.name}
+                                </div>
+                                ${matchBadge}
+                                <div style="font-size: 11px; color: #666; margin-top: 2px;">${officer.title}</div>
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 3px; font-size: 13px; font-weight: 600; color: #000; margin-left: 8px;">
+                                <span style="font-size: 14px;">★</span>
+                                <span>${officer.rating}</span>
+                            </div>
+                        </div>
+                        
+                        <div style="font-size: 11px; color: #666; margin-bottom: 10px;">
+                            <span style="font-weight: 500;">${officer.years_experience} years</span> experience
+                        </div>
+                        
+                        <div style="font-size: 11px; color: #666; line-height: 1.5; margin-bottom: 10px; padding: 10px; background: #f5f5f5; border-radius: 6px; max-height: 60px; overflow: hidden;">
+                            ${officer.bio}
+                        </div>
+                        
+                        <div style="display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 10px;">
+                            ${specialties}
+                        </div>
+                        
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; padding-top: 10px; border-top: 1px solid #f0f0f0;">
+                            <a href="mailto:${officer.contact}" style="padding: 8px; border-radius: 6px; font-size: 11px; font-weight: 600; text-align: center; text-decoration: none; background: #000; color: #fff; white-space: nowrap;"
+                               onmouseover="this.style.background='#333';" onmouseout="this.style.background='#000';">
+                                ✉️ Email
+                            </a>
+                            <a href="tel:${officer.phone}" style="padding: 8px; border-radius: 6px; font-size: 11px; font-weight: 600; text-align: center; text-decoration: none; background: #f5f5f5; color: #000; border: 1px solid #e0e0e0; white-space: nowrap;"
+                               onmouseover="this.style.background='#e0e0e0';" onmouseout="this.style.background='#f5f5f5';">
+                                📞 Call
+                            </a>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            html += `
+                    </div>
+                </div>
+            `;
+            
+            containerDiv.innerHTML = html;
+            messagesDiv.appendChild(containerDiv);
+            scrollToBottom();
+        }
+        
+        // Format specialty text
+        function formatSpecialty(specialty) {
+            const map = {
+                'purchase': 'Purchase',
+                'refinance': 'Refinance',
+                'investment': 'Investment',
+                'second_home': 'Second Home',
+                'va_loan': 'VA Loan',
+                'jumbo': 'Jumbo Loan',
+                'self_employed': 'Self-Employed'
+            };
+            return map[specialty] || specialty;
+        }
+
+        // Listen for messages from embedded frames
+        window.addEventListener('message', function(event) {
+            const message = event.data;
+            if (!message || typeof message !== 'object') return;
+
+            console.log('[Parent] Received message:', message);
+
+            // Handle embed ready
+            if (message.type === 'embed_ready') {
+                const pageId = message.pageId;
+                console.log('[Parent] Embed ready:', pageId);
+                
+                // Send ready confirmation
+                const frame = embedFrames[pageId];
+                if (frame) {
+                    frame.contentWindow.postMessage({
+                        type: 'parent_ready'
+                    }, '*');
+                }
+            }
+
+            // Handle embed data
+            if (message.type === 'embed_data') {
+                const data = message.data;
+                
+                if (data.type === 'message') {
+                    // Display as regular message
+                    addMessage('assistant', data.content);
+                } else if (data.type === 'form_submit') {
+                    // Form submission - send to backend silently
+                    console.log('[Parent] Form submitted:', data.data);
+                    
+                    // Format form data as user message
+                    const formData = data.data;
+                    const summary = formatFormDataSummary(formData);
+                    
+                    // Show loading indicator
+                    showLoading();
+                    
+                    // Send to backend via WebSocket (no UI display)
+                    if (ws && ws.readyState === WebSocket.OPEN) {
+                        const formMessage = `I have completed the loan application form with the following information:\n${summary}`;
+                        ws.send(JSON.stringify({
+                            type: 'message',
+                            message: formMessage,
+                            stream: true
+                        }));
+                    }
+                }
+            }
+
+            // Handle embed resize
+            if (message.type === 'embed_resize') {
+                const pageId = message.pageId;
+                const frame = embedFrames[pageId];
+                if (frame) {
+                    frame.style.height = message.height + 'px';
+                }
+            }
+
+            // Handle embed close
+            if (message.type === 'embed_close') {
+                const pageId = message.pageId;
+                const frame = embedFrames[pageId];
+                if (frame) {
+                    frame.closest('.message').remove();
+                    delete embedFrames[pageId];
+                }
+            }
+        });
+
+        // Format form data as readable summary
+        function formatFormDataSummary(formData) {
+            const lines = [];
+            if (formData.propertyLocation) lines.push(`- Property Location: ${formData.propertyLocation}`);
+            if (formData.loanPurpose) lines.push(`- Loan Purpose: ${formData.loanPurpose}`);
+            if (formData.propertyType) lines.push(`- Property Type: ${formData.propertyType}`);
+            if (formData.propertyStatus) lines.push(`- Property Status: ${formData.propertyStatus}`);
+            if (formData.loanAmount) lines.push(`- Loan Amount: $${formData.loanAmount}`);
+            if (formData.downPayment) lines.push(`- Down Payment: ${formData.downPayment}`);
+            if (formData.creditScore) lines.push(`- Credit Score: ${formData.creditScore}`);
+            if (formData.incomeType) lines.push(`- Income Type: ${formData.incomeType}`);
+            if (formData.military) lines.push(`- Military: ${formData.military}`);
+            if (formData.selfEmployed) lines.push(`- Self-Employed: ${formData.selfEmployed}`);
+            if (formData.taxReturns) lines.push(`- Tax Returns (2+ years): ${formData.taxReturns}`);
+            return lines.join('\n');
+        }
+
+        // Add regular message
+        function addMessage(role, content) {
+            const messagesDiv = document.getElementById('messages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${role}`;
+            
+            let roleLabel = role === 'user' ? 'You' : 'Assistant';
+            
+            const renderedContent = marked.parse(content);
+            
+            messageDiv.innerHTML = `
+                <div class="message-role">${roleLabel}</div>
+                <div class="message-content">${renderedContent}</div>
+            `;
+            
+            messagesDiv.appendChild(messageDiv);
+            scrollToBottom();
+        }
+
+        // Add embedded iframe
+        function addEmbedMessage(url, pageId) {
+            const messagesDiv = document.getElementById('messages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'message embed';
+            
+            const iframe = document.createElement('iframe');
+            iframe.className = 'embed-frame';
+            iframe.src = url;
+            iframe.id = 'embed-' + pageId;
+            iframe.style.height = '1200px'; // 初始高度，后续会动态调整
+            
+            messageDiv.innerHTML = `
+                <div class="message-role">Interactive Form</div>
+                <div class="message-content"></div>
+            `;
+            messageDiv.querySelector('.message-content').appendChild(iframe);
+            
+            messagesDiv.appendChild(messageDiv);
+            embedFrames[pageId] = iframe;
+            
+            scrollToBottom();
+        }
+
+        // Add structured data message
+        function addDataMessage(title, data) {
+            const messagesDiv = document.getElementById('messages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'message data assistant';
+            
+            // 字段名映射
+            const fieldLabels = {
+                propertyLocation: '房产地点',
+                loanPurpose: '贷款目的',
+                propertyType: '房产类型',
+                propertyStatus: '房产现状',
+                loanAmount: '贷款金额',
+                downPayment: '首付比例',
+                creditScore: '信用分数',
+                incomeType: '收入类型',
+                military: '军人身份',
+                selfEmployed: '自雇收入',
+                taxReturns: '税单记录',
+                timestamp: '提交时间'
+            };
+            
+            // 值映射
+            const valueLabels = {
+                loanPurpose: {
+                    purchase: '购买自住房',
+                    refinance: '再融资/转贷',
+                    investment: '投资房',
+                    second_home: '第二套房'
+                },
+                propertyType: {
+                    single_family: '独立屋',
+                    condo: '公寓',
+                    townhouse: '联排别墅',
+                    multi_unit: '多单元住宅',
+                    commercial: '商业地产'
+                },
+                propertyStatus: {
+                    pre_construction: '在建/预售',
+                    existing: '现房',
+                    foreclosure: '法拍房'
+                },
+                incomeType: {
+                    w2: 'W-2工资收入',
+                    self_employed: '自雇收入',
+                    investment: '投资收入',
+                    other: '其他'
+                },
+                military: { yes: '是', no: '否' },
+                selfEmployed: { yes: '是', no: '否' },
+                taxReturns: { yes: '是', no: '否' }
+            };
+            
+            let dataItems = '';
+            for (const [key, value] of Object.entries(data)) {
+                // 跳过timestamp
+                if (key === 'timestamp') continue;
+                
+                const displayKey = fieldLabels[key] || key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase());
+                let displayValue = value;
+                
+                // 格式化值
+                if (valueLabels[key] && valueLabels[key][value]) {
+                    displayValue = valueLabels[key][value];
+                } else if (key === 'loanAmount') {
+                    displayValue = '$' + parseInt(value || 0).toLocaleString();
+                } else if (typeof value === 'object') {
+                    displayValue = JSON.stringify(value);
+                }
+                
+                dataItems += `
+                    <div class="data-item">
+                        <span class="data-label">${displayKey}</span>
+                        <span class="data-value">${displayValue}</span>
+                    </div>
+                `;
+            }
+            
+            messageDiv.innerHTML = `
+                <div class="message-role">Data Received</div>
+                <div class="message-content">
+                    <div class="data-header">${title}</div>
+                    <div class="data-body">
+                        ${dataItems}
+                    </div>
+                </div>
+            `;
+            
+            messagesDiv.appendChild(messageDiv);
+            scrollToBottom();
+        }
+
+        // Send message
+        function sendMessage() {
+            const input = document.getElementById('input');
+            const message = input.value.trim();
+            if (!message) return;
+            
+            if (!ws || ws.readyState !== WebSocket.OPEN) {
+                addMessage('assistant', '⚠️ Not connected. Please refresh.');
+                return;
+            }
+            
+            addMessage('user', message);
+            input.value = '';
+            
+            // Show loading indicator
+            showLoading();
+            
+            // Send to WebSocket
+            ws.send(JSON.stringify({
+                type: 'message',
+                message: message,
+                stream: true
+            }));
+        }
+
+        // Embed loan form
+        function embedLoanForm() {
+            addMessage('assistant', 'Loading loan form: loankit.html');
+        }
+
+        // Simulate data response
+        function simulateDataResponse() {
+            addDataMessage('Sample Loan Data', {
+                propertyLocation: 'Los Angeles, CA',
+                loanAmount: 500000,
+                downPayment: '20%+',
+                creditScore: '740-799',
+                loanPurpose: 'Purchase',
+                propertyType: 'Single Family',
+                incomeType: 'W-2'
+            });
+        }
+
+        // Clear chat
+        function clearChat() {
+            document.getElementById('messages').innerHTML = '';
+            embedFrames = {};
+        }
+
+        // Scroll to bottom
+        let scrollPending = false;
+        function scrollToBottom() {
+            if (!scrollPending) {
+                scrollPending = true;
+                requestAnimationFrame(() => {
+                    const messages = document.getElementById('messages');
+                    messages.scrollTop = messages.scrollHeight;
+                    scrollPending = false;
+                });
+            }
+        }
+
+        // Handle Enter key
+        document.getElementById('input').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendMessage();
+            }
+        });
+
+        // Initialize on page load
+        initWebSocket();
+        
+        // Welcome message
+        addMessage('assistant', '👋 Welcome! I\'m your mortgage advisor. How can I help you today?');
+    </script>
+</body>
+</html>
