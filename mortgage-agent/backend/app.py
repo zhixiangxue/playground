@@ -1,6 +1,7 @@
 """FastAPI application with WebSocket for mortgage agent"""
 import json
 import traceback
+from pathlib import Path
 from typing import Dict
 
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
@@ -27,7 +28,8 @@ app.add_middleware(
 )
 
 # Serve frontend static files
-app.mount("/static", StaticFiles(directory="../frontend"), name="static")
+frontend_dir = Path(__file__).parent.parent / "frontend"
+app.mount("/static", StaticFiles(directory=str(frontend_dir)), name="static")
 
 # Store active agents per connection
 agents: Dict[int, MortgageAgent] = {}

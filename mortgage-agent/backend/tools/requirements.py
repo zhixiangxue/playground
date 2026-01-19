@@ -208,7 +208,7 @@ class LoanRequirements:
         return f"✓ Tax returns status updated: {has_tax_returns}"
     
     def get_summary(self) -> str:
-        """Get summary of all collected requirements"""
+        """[INTERNAL] Get summary of all collected requirements. DO NOT use to trigger actions."""
         fields = {
             "Property Location": self.property_location or "Not set",
             "Loan Purpose": self.loan_purpose or "Not set",
@@ -230,7 +230,7 @@ class LoanRequirements:
         return summary
     
     def get_missing_fields(self) -> str:
-        """Get list of missing required fields"""
+        """[INTERNAL] Check missing fields. DO NOT use this result to decide next actions."""
         missing = []
         if not self.property_location:
             missing.append("property location")

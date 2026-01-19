@@ -19,18 +19,24 @@ SYSTEM_PROMPT = """You are a friendly and professional mortgage advisor speciali
 Your mission:
 Help users navigate the mortgage process with clear, personalized guidance. Make complex topics easy to understand.
 
+Tool usage principles (IMPORTANT - prioritize tools over conversation):
+- Always check if a tool can help before responding with pure text
+- Use tools proactively to collect data, search knowledge, or make recommendations
+- After tool calls: Briefly summarize results, let the tool UI do the heavy lifting
+
 Key principles:
 - Be conversational and warm, not robotic
-- Explain financial terms in simple language
+- Explain financial terms in simple language  
 - Ask clarifying questions when needed
 - Provide actionable next steps
+- Actions over words: Prefer tool calls to pure conversation
 
 Important notes:
 - When using tools that display visual content (forms, recommendations), let the tool do its work without adding extra commentary
 - Never generate markdown links or URLs - the system handles all UI interactions
 - Stay focused on mortgage and real estate topics
 
-Remember: You're here to guide and support, not just provide information."""
+Remember: You're here to guide and support with both conversation AND powerful tools."""
 
 
 class MortgageAgent:
@@ -96,16 +102,16 @@ class MortgageAgent:
         # ============================================================
         # Dynamic Tool Management (LLM-driven)
         # ============================================================
-        try:
-            await analyze_and_update_tools(
-                conversation=self.conversation,
-                user_message=message,
-                current_tools=self.conversation.get_tools(),
-                tool_map=self.tool_map,
-                api_key=self.api_key
-            )
-        except Exception as e:
-            print(f"[Agent] ⚠️ Dynamic tool analysis failed: {e}")
+        # try:
+        #     await analyze_and_update_tools(
+        #         conversation=self.conversation,
+        #         user_message=message,
+        #         current_tools=self.conversation.get_tools(),
+        #         tool_map=self.tool_map,
+        #         api_key=self.api_key
+        #     )
+        # except Exception as e:
+        #     print(f"[Agent] ⚠️ Dynamic tool analysis failed: {e}")
             # Continue even if tool analysis fails
         
         # ============================================================
@@ -133,16 +139,32 @@ class MortgageAgent:
         if stream:
             # Return async generator for streaming
             async def stream_with_tracking():
-                from chak.message import MessageChunk
+                from chak.message import MessageChunk, ToolCallSuccessEvent
                 
                 async for event in response:
-                    # Check if loan form tool was called (only for MessageChunk)
+                    # Immediately remove tool when it's called successfully
+                    if isinstance(event, ToolCallSuccessEvent):
+                        if event.tool_name == 'generate_loan_form_url':
+                            print(f"[Agent] ✓ Loan form tool called, removing it immediately")
+                            self.loan_form_sent = True
+                            # Remove tool immediately
+                            if generate_loan_form_url in self.tools:
+                                self.tools.remove(generate_loan_form_url)
+                                # Update ToolManager
+                                from chak.tools import wrap_tools
+                                from chak.tools.manager import ToolManager
+                                wrapped_tools = wrap_tools(self.tools)
+                                self.conversation._tool_manager = ToolManager(
+                                    wrapped_tools, 
+                                    executor=self.conversation._get_executor()
+                                )
+                                print("[Agent] ✓ Tool removed from available tools")
+                    
+                    # Also track in final message for backup
                     if isinstance(event, MessageChunk) and event.is_final and event.final_message:
-                        # Check metadata for tool calls
                         if hasattr(event.final_message, 'metadata'):
                             metadata = event.final_message.metadata
                             if metadata and 'tool_calls' in str(metadata):
-                                # Check if generate_loan_form_url was called
                                 if 'generate_loan_form_url' in str(metadata):
                                     self.loan_form_sent = True
                     

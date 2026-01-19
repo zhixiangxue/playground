@@ -10,10 +10,18 @@ def recommend_loan_officer(requirements: 'LoanRequirements') -> str:
     """
     Generate a list of matching loan officers for the user.
     
-    **CALL THIS ONLY WHEN**: User explicitly requests loan officer recommendations for the FIRST time.
-    (e.g., "recommend some loan officers", "find me loan officers", "who can help with my loan")
+    ⚠️ CRITICAL: ONLY call when user EXPLICITLY ASKS for recommendations.
+    Examples: "recommend loan officers", "find me loan officers", "who can help with my loan"
     
-    Do NOT call for follow-up questions about officers already shown. Answer those directly.
+    ❌ DO NOT call automatically when:
+    - Information is complete (they might not want recommendations yet)
+    - User just updated their information
+    - User hasn't mentioned wanting loan officer recommendations
+    - You're just confirming or summarizing information
+    
+    ✅ ONLY call when:
+    - User directly requests loan officer recommendations
+    - User asks "who can help me" or similar questions
     
     Args:
         requirements: User's loan requirements (shared instance from agent)

@@ -18,9 +18,16 @@ def generate_loan_form_url(
     tax_returns: str = ""
 ) -> str:
     """
-    **CALL THIS IMMEDIATELY when user wants to apply for a mortgage or start the loan application process.**
+    **CALL THIS IMMEDIATELY when user expresses ANY intent related to getting a mortgage.**
     
-    This is the PRIMARY action tool - call it as soon as user expresses intent to apply, even without any information.
+    Trigger scenarios (call immediately for ANY of these):
+    - User wants to apply for a mortgage or loan
+    - User asks about buying a house with a loan (买房贷款)
+    - User mentions needing financing or getting a mortgage
+    - User asks "how to get started" with mortgage process
+    - User wants to see loan options or rates
+    
+    This is the PRIMARY action tool - call it even without any user information.
     The form will collect all necessary details interactively.
     
     Optional pre-fill parameters (all are optional, can call with no arguments):
